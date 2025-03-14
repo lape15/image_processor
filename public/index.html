@@ -1,46 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Image Upload</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        padding: 20px;
+      }
 
-        input {
-            margin: 10px;
-        }
+      input {
+        margin: 10px;
+      }
 
-        button {
-            padding: 10px 20px;
-            cursor: pointer;
-        }
+      button {
+        padding: 10px 20px;
+        cursor: pointer;
+      }
 
-        #status {
-            margin-top: 10px;
-            color: green;
-        }
+      #status {
+        margin-top: 10px;
+        color: green;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <h1>Upload an Image</h1>
 
     <div>
-        <form id="uploadForm">
-            <input type="file" id="fileInput" accept="image/*" requireds>
-            <button type="submit">Upload</button>
-        </form>
+      <form id="uploadForm">
+        <input type="file" id="fileInput" accept="image/*" requireds />
+        <button type="submit">Upload</button>
+        <p id="status"></p>
+      </form>
     </div>
     <script>
-
+      Document.getElementById("uploadForm").addEventListener(
+        "submit",
+        async (event) => {
+          event.preventDefault();
+          const fileInput = document.getElementById("fileInput");
+          if (fileInput.files.length === 0) {
+            const status = document.getElementById("status");
+            status.textContent = "No file selected";
+            return;
+          }
+          const file = fileInput.files[0];
+          const formData = new FormData();
+          formData.append("file", file);
+          const response = await fetch("/upload", {
+            method: "POST",
+            body: formData,
+          });
+          const result = await response.json();
+          document.getElementById("status").textContent = result.message;
+        }
+      );
     </script>
-</body>
-
-
+  </body>
 </html>
