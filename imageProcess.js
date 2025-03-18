@@ -11,9 +11,9 @@ const s3 = new AWS.S3({
 });
 
 const sizes = [
-  { suffix: "small", width: 200 },
+  // { suffix: "small", width: 200 },
   { suffix: "medium", width: 500 },
-  { suffix: "large", width: 800 },
+  // { suffix: "large", width: 800 },
 ];
 
 async function processImage() {
@@ -28,7 +28,8 @@ async function processImage() {
         .resize(size.width)
         .toBuffer();
       const newKey = `processed/${size.suffix}/${path.basename(key)}`;
-      await s3
+
+      const res = await s3
         .upload({
           Bucket: process.env.S3_BUCKET_NAME,
           Key: newKey,
@@ -36,18 +37,18 @@ async function processImage() {
           ContentType: "image/jpeg",
         })
         .promise();
+
       parentPort.postMessage({
         status: "success",
         size: size.suffix,
         key: newKey,
+        response: res,
       });
       parentPort.close();
     }
   } catch (err) {
-    parentPort.postMessage({ status: "error", error: error.message });
+    parentPort.postMessage({ status: "error", error: err.message });
   }
 }
 
-if (isMainThread) {
-  processImage();
-}
+processImage();

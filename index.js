@@ -2,14 +2,14 @@ const { S3Client } = require("@aws-sdk/client-s3");
 const express = require("express");
 const multer = require("multer");
 const multerS3 = require("multer-s3");
+const { Worker } = require("worker_threads");
 const path = require("path");
 const PORT = 5000;
 
 require("dotenv").config();
 
-app.use(express.static("public"));
 const app = express();
-
+app.use(express.static("public"));
 const s3 = new S3Client({
   region: process.env.AWS_REGION,
   credentials: {
@@ -28,7 +28,7 @@ const upload = multer({
       cb(null, { fieldName: file.fieldname });
     },
     key: function (req, file, cb) {
-      cb(null, `uploads/${Date.now()}-${file.originalname}`);
+      cb(null, `public-uploads/${Date.now()}-${file.originalname}`);
     },
   }),
 });
@@ -50,6 +50,12 @@ app.post("/upload", upload.single("file"), (req, res) => {
   });
   worker.on("message", (message) => {
     console.log(message);
+    // if (message.status === "success") {
+    //   res.json({
+    //     message: "Upload successful, processing started",
+    //     imgUrl: message.response.Location,
+    //   });
+    // }
   });
   worker.on("error", (error) => {
     console.error("Worker Error:", error);
